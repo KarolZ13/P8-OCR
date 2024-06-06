@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\TaskType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,19 @@ class TaskController extends AbstractController
     #[Route('/tasks', name: 'task_list')]
     public function listAction(ManagerRegistry $doctrine): Response
     {
+        $entityManager = $doctrine->getManager();
+
         $tasks = $doctrine->getRepository(Task::class)->findAll();
+
+        foreach ($tasks as $task){
+           if ($task->getIdUser() === null) {
+            $defaultUser = $doctrine->getRepository(User::class)->find(1);
+            $task->setIdUser($defaultUser);
+            $entityManager->persist($task);
+           } 
+        }
+
+        $entityManager->flush();
 
         return $this->render('task/list.html.twig', ['tasks' => $tasks]);
     }
@@ -22,7 +35,9 @@ class TaskController extends AbstractController
     #[Route('/tasks/create', name: 'task_create')]
     public function createAction(Request $request, ManagerRegistry $doctrine): Response
     {
+        $user = $this->getUser();
         $task = new Task();
+        $task->setIdUser($user);
         $form = $this->createForm(TaskType::class, $task);
 
         $form->handleRequest($request);
