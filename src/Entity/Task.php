@@ -5,40 +5,35 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity
- * @ORM\Table
- */
+#[ORM\Table(name: 'task')]
+#[ORM\Entity]
 class Task
 {
-    /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $createdAt;
 
-    /**
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank(message="Vous devez saisir un titre.")
-     */
+
+    #[ORM\Column(type: 'string')]
+    #[Assert\NotBlank(message:'Vous devez saisir un titre.')]
+
     private $title;
 
-    /**
-     * @ORM\Column(type="text")
-     * @Assert\NotBlank(message="Vous devez saisir du contenu.")
-     */
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message:'Vous devez saisir du contenu.')]
     private $content;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private $isDone;
+
+    #[ORM\ManyToOne(inversedBy: 'task')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -66,6 +61,18 @@ class Task
         return $this->title;
     }
 
+    public function getIdUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setIdUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
     public function setTitle($title)
     {
         $this->title = $title;
@@ -79,6 +86,12 @@ class Task
     public function setContent($content)
     {
         $this->content = $content;
+    }
+
+    public function setIsDone(bool $isDone): self
+    {
+        $this->isDone = $isDone;
+        return $this;
     }
 
     public function isDone()

@@ -10,6 +10,7 @@
 
         <title>To Do List app</title>
 
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <!-- Bootstrap Core CSS -->
         <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
@@ -37,17 +38,17 @@
 
         <!-- Page Content -->
         <div class="container">
-            <div class="row">
-                <a href="{{ path('user_create') }}" class="btn btn-primary">Créer un utilisateur</a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('user_create') }}" class="btn btn-primary">Créer un utilisateur</a>
 
-                {#{% if app.user %}#}
-                <a href="{{ path('logout') }}" class="pull-right btn btn-danger">Se déconnecter</a>
-                {#{% endif %}#}
+            <a href="{{ path('user_list') }}" class="btn btn-primary">Liste des utilisateurs</a>
+            {% endif %}
 
-                {#{% if not app.user and 'login' != app.request.attributes.get('_route') %}#}
-                <a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
-                {#{% endif %}#}
-            </div>
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+            <a href="{{ path('logout') }}" class="pull-right btn btn-danger">Se déconnecter</a>
+            {% else %}
+            <a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
+            {% endif %}
 
             <div class="row">
                 <div class="col-md-12">
@@ -90,8 +91,6 @@
             </footer>
 
         </div>
-
-        <script src="{{ asset('js/jquery.js') }}"></script>
         <script src="{{ asset('js/bootstrap.min.js') }}"></script>
     </body>
 </html>

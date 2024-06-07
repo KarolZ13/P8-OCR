@@ -28,7 +28,11 @@
         "symfony/asset": "^6.4",
         "symfony/routing": "6.4",
         "symfony/dependency-injection": "^6.4",
-        "symfony/validator": "^6.4"
+        "symfony/validator": "^6.4",
+        "fakerphp/faker": "^1.23",
+        "symfony/security-bundle": "^6.4",
+        "symfony/form": "^6.4",
+        "symfony/twig-bundle": "^6.4"
     }, 
     "require-dev": { 
         "symfony/phpunit-bridge": "^3.4", 
