@@ -9,19 +9,30 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class UserController extends AbstractController
 {
     #[Route('/users', name: 'user_list')]
-    public function listAction(): Response
+    public function listAction(ManagerRegistry $doctrine): Response
     {
-        $users = $this->getDoctrine()->getRepository(User::class)->findAll();
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw new AccessDeniedException('Accès refusé');
+        }
+
+        $users = $doctrine->getRepository(User::class)->findAll();
+
         return $this->render('user/list.html.twig', ['users' => $users]);
     }
 
     #[Route('/users/create', name: 'user_create')]
-    public function createAction(Request $request, UserPasswordHasherInterface $passwordHasher): Response
+    public function createAction(Request $request, UserPasswordHasherInterface $passwordHasher, ManagerRegistry $doctrine): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw new AccessDeniedException('Accès refusé');
+        }
+
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
 
@@ -31,9 +42,9 @@ class UserController extends AbstractController
             $password = $passwordHasher->hashPassword($user, $user->getPassword());
             $user->setPassword($password);
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($user);
-            $em->flush();
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($user);
+            $entityManager->flush();
 
             $this->addFlash('success', "L'utilisateur a bien été ajouté.");
 
@@ -44,8 +55,12 @@ class UserController extends AbstractController
     }
 
     #[Route('/users/{id}/edit', name: 'user_edit')]
-    public function editAction(User $user, Request $request, UserPasswordHasherInterface $passwordHasher): Response
+    public function editAction(User $user, Request $request, UserPasswordHasherInterface $passwordHasher, ManagerRegistry $doctrine): Response
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw new AccessDeniedException('Accès refusé');
+        }
+
         $form = $this->createForm(UserType::class, $user);
 
         $form->handleRequest($request);
@@ -54,7 +69,9 @@ class UserController extends AbstractController
             $password = $passwordHasher->hashPassword($user, $user->getPassword());
             $user->setPassword($password);
 
-            $this->getDoctrine()->getManager()->flush();
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($user);
+            $entityManager->flush();
 
             $this->addFlash('success', "L'utilisateur a bien été modifié");
 
