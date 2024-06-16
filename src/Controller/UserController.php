@@ -17,8 +17,11 @@ class UserController extends AbstractController
     #[Route('/users', name: 'user_list')]
     public function listAction(ManagerRegistry $doctrine): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            throw new AccessDeniedException('Accès refusé');
+        if (!$this->isGranted('ROLE_ADMIN')) { 
+
+            $this->addFlash('error', 'Accès refusé.');
+
+            return $this->render('default/index.html.twig');
         }
 
         $users = $doctrine->getRepository(User::class)->findAll();
@@ -30,7 +33,10 @@ class UserController extends AbstractController
     public function createAction(Request $request, UserPasswordHasherInterface $passwordHasher, ManagerRegistry $doctrine): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
-            throw new AccessDeniedException('Accès refusé');
+                        
+            $this->addFlash('error', 'Accès refusé.');
+
+            return $this->render('default/index.html.twig');
         }
 
         $user = new User();
@@ -58,7 +64,8 @@ class UserController extends AbstractController
     public function editAction(User $user, Request $request, UserPasswordHasherInterface $passwordHasher, ManagerRegistry $doctrine): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
-            throw new AccessDeniedException('Accès refusé');
+            $this->addFlash('error', 'Accès refusé.');
+            return $this->render('default/index.html.twig');
         }
 
         $form = $this->createForm(UserType::class, $user);

@@ -39,7 +39,8 @@
         "symfony/maker-bundle": "^1.31", 
         "doctrine/doctrine-fixtures-bundle": "^3.4", 
         "symfony/stopwatch": "^6.4", 
-        "symfony/web-profiler-bundle": "^6.4"
+        "symfony/web-profiler-bundle": "^6.4",
+        "phpunit/phpunit": "^11.2"
     },
     "scripts": {
         "symfony-scripts": [
