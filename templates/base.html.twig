@@ -47,7 +47,9 @@
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
             <a href="{{ path('logout') }}" class="pull-right btn btn-danger">Se déconnecter</a>
             {% else %}
-            <a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
+                {% if app.request.pathinfo != path('login') %}
+                <a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
+                {% endif %}
             {% endif %}
 
             <div class="row">

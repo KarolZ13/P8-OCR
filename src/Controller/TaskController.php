@@ -95,7 +95,6 @@ class TaskController extends AbstractController
         $currentUser = $this->getUser();
         $anonymeUsername = 'anonyme';
 
-        // Vérifier si la tâche est liée à l'utilisateur anonyme
         if ($task->getIdUser()->getUsername() === $anonymeUsername && $this->isGranted('ROLE_ADMIN')) {
             $entityManager = $doctrine->getManager();
             $entityManager->remove($task);
