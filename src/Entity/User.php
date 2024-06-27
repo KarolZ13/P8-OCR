@@ -95,6 +95,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoles(array $roles): static
     {
+        if (!in_array(self::ROLE_USER, $roles, true)) {
+            $roles[] = self::ROLE_USER;
+        }
+
         $this->roles = $roles;
 
         return $this;
@@ -140,5 +144,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    public function getReadableRole(): string
+    {
+        if (in_array(self::ROLE_ADMIN, $this->roles, true)) {
+            return 'Administrateur';
+        }
+
+        return 'Utilisateur';
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles(), true);
     }
 }
