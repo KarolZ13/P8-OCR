@@ -48,6 +48,17 @@ class UserController extends AbstractController
             $password = $passwordHasher->hashPassword($user, $user->getPassword());
             $user->setPassword($password);
 
+            $roles = $user->getRoles();
+            if (empty($roles)) {
+                $user->setRoles([User::ROLE_USER]);
+            } else {
+                // Ajout de ROLE_USER s'il n'est pas déjà présent
+                if (!in_array(User::ROLE_USER, $roles, true)) {
+                    $roles[] = User::ROLE_USER;
+                    $user->setRoles($roles);
+                }
+            }
+
             $entityManager = $doctrine->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
