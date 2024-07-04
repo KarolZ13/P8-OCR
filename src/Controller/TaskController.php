@@ -18,7 +18,7 @@ class TaskController extends AbstractController
     {
         $entityManager = $doctrine->getManager();
 
-        $tasks = $doctrine->getRepository(Task::class)->findAll();
+        $tasks = $doctrine->getRepository(Task::class)->findBy(['isDone' => false]);
         
         foreach ($tasks as $task){
            if ($task->getIdUser() === null) {
@@ -40,6 +40,11 @@ class TaskController extends AbstractController
         $task = new Task();
         $task->setIdUser($user);
         $form = $this->createForm(TaskType::class, $task);
+        if (!$user){
+            $this->addFlash('error', 'Accès refusé.');
+
+            return $this->redirectToRoute('homepage');
+        }
 
         $form->handleRequest($request);
 
@@ -60,6 +65,22 @@ class TaskController extends AbstractController
     #[Route('/tasks/{id}/edit', name: 'task_edit')]
     public function editAction(Task $task, Request $request, ManagerRegistry $doctrine): Response
     {
+        $currentUser = $this->getUser();
+        $anonymeUsername = 'anonyme';
+
+        if ($task->getIdUser() && $task->getIdUser()->getUsername() === $anonymeUsername && $this->isGranted('ROLE_ADMIN')) {
+            $canEdit = true;
+        } elseif ($task->getIdUser() === $currentUser) {
+            $canEdit = true;
+        } else {
+            $canEdit = false;
+        }
+
+        if (!$canEdit) {
+            $this->addFlash('error', 'Accès refusé.');
+            return $this->redirectToRoute('task_list');
+        }
+
         $form = $this->createForm(TaskType::class, $task);
 
         $form->handleRequest($request);
@@ -81,10 +102,22 @@ class TaskController extends AbstractController
     #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
     public function toggleTaskAction(Task $task, ManagerRegistry $doctrine): Response
     {
-        $task->toggle(!$task->isDone());
-        $doctrine->getManager()->flush();
+        $currentUser = $this->getUser();
+        $anonymeUsername = 'anonyme';
 
-        $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
+        if ($task->getIdUser()->getUsername() === $anonymeUsername && $this->isGranted('ROLE_ADMIN')) {
+            $task->toggle(!$task->isDone());
+            $doctrine->getManager()->flush();
+
+            $this->addFlash('success', 'La tâche a bien été marqué comme terminée.');
+        } elseif ($task->getIdUser() === $currentUser) {
+            $task->toggle(!$task->isDone());
+            $doctrine->getManager()->flush();
+
+            $this->addFlash('success', 'La tâche a bien été marqué comme terminé.');
+        } else {
+            $this->addFlash('error', 'Accès refusé.');
+        }
 
         return $this->redirectToRoute('task_list');
     }
@@ -108,9 +141,29 @@ class TaskController extends AbstractController
 
             $this->addFlash('success', 'La tâche a bien été supprimée.');
         } else {
-            $this->addFlash('error', 'Vous n\'êtes pas autorisé à supprimer cette tâche.');
+            $this->addFlash('error', 'Accès refusé.');
         }
 
         return $this->redirectToRoute('task_list');
+    }
+
+    #[Route('/tasks/close', name: 'task_list_done')]
+    public function listDoneAction(ManagerRegistry $doctrine): Response
+    {
+        $entityManager = $doctrine->getManager();
+
+        $tasks = $doctrine->getRepository(Task::class)->findBy(['isDone' => true]);
+
+        foreach ($tasks as $task){
+            if ($task->getIdUser() === null) {
+                $anonymeUser = $doctrine->getRepository(User::class)->findOneBy(['username' => 'anonyme']);
+                $task->setIdUser($anonymeUser);
+                $entityManager->persist($task);
+            }
+        }
+
+        $entityManager->flush();
+
+        return $this->render('task/listDone.html.twig', ['tasks' => $tasks, ]);
     }
 }
