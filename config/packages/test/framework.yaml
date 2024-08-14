@@ -1,4 +1,7 @@
 framework:
     test: true
     session:
-        storage_id: session.storage.mock_file
+        enabled: true
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax

@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\Entity;
+namespace Entity;
 
 use App\Entity\Task;
 use App\Entity\User;
@@ -65,13 +65,11 @@ class TaskTest extends TestCase
 
     public function testSetIsDone()
     {
-        $this->task->toggle(true);
+        $this->task->setIsDone(true);
+        $this->assertTrue($this->task->isDone());
 
-        $this->assertTrue($this->task->setIsDone(1));
-
-        $this->task->toggle(false);
-
-        $this->assertFalse($this->task->setIsDone(0));
+        $this->task->setIsDone(false);
+        $this->assertFalse($this->task->isDone());
     }
 
 }
