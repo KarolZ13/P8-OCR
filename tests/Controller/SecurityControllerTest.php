@@ -60,6 +60,7 @@ class SecurityControllerTest extends WebTestCase
         $this->assertRouteSame('login');
     }
 
+
     public function testConnexionUtilisateurAvecMauvaisIdentifiants()
     {
         $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('login'));

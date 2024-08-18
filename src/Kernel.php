@@ -12,6 +12,9 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function registerBundles(): iterable
     {
         $contents = require $this->getProjectDir().'/config/bundles.php';
@@ -22,6 +25,10 @@ class Kernel extends BaseKernel
         }
     }
 
+
+    /**
+     * @codeCoverageIgnore
+     */
     protected function configureContainer(ContainerConfigurator $container): void
     {
         $container->import('../config/{packages}/*.yaml');
@@ -35,6 +42,9 @@ class Kernel extends BaseKernel
         }
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->import('../config/{routes}/' . $this->environment . '/*.yaml');

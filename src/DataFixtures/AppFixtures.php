@@ -14,11 +14,17 @@ class AppFixtures extends Fixture
 {
     private $filesystem;
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __construct(private UserPasswordHasherInterface $passwordEncoder, Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function load(ObjectManager $manager): void
     {
         $faker = Faker\Factory::create('fr_FR');

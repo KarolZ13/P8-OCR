@@ -55,15 +55,13 @@ class TaskControllerTest extends WebTestCase
 
         foreach ($tasks as $task) {
             $this->assertGreaterThan(0, $crawler->filter('.task-title:contains("' . $task->getTitle() . '")')->count());
-        }
-
-        $anonymeUser = $this->em->getRepository(User::class)->findOneBy(['username' => 'anonyme']);
-        foreach ($tasks as $task) {
             if ($task->getIdUser() === null) {
+                $anonymeUser = $this->em->getRepository(User::class)->findOneBy(['username' => 'anonyme']);
                 $this->assertEquals($anonymeUser, $task->getIdUser());
             }
         }
     }
+
     public function testEditionDeTache()
     {
         $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);

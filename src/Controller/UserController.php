@@ -52,7 +52,6 @@ class UserController extends AbstractController
             if (empty($roles)) {
                 $user->setRoles([User::ROLE_USER]);
             } else {
-                // Ajout de ROLE_USER s'il n'est pas déjà présent
                 if (!in_array(User::ROLE_USER, $roles, true)) {
                     $roles[] = User::ROLE_USER;
                     $user->setRoles($roles);
