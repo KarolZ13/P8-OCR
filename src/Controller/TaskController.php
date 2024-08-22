@@ -39,7 +39,7 @@ class TaskController extends AbstractController
         $task = new Task();
         $task->setIdUser($user);
         $form = $this->createForm(TaskType::class, $task);
-        if (!$user){
+        if ($user === null){
             $this->addFlash('error', 'Accès refusé.');
 
             return $this->redirectToRoute('homepage');
