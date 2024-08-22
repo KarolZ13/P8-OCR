@@ -15,13 +15,13 @@ class TaskControllerTest extends WebTestCase
 {
     private ?KernelBrowser $client = null;
     private ?UrlGeneratorInterface $urlGenerator = null;
-    private ?EntityManagerInterface $em = null;
+    private ?EntityManagerInterface $entityManager = null;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
         $this->urlGenerator = $this->client->getContainer()->get('router.default');
-        $this->em = $this->client->getContainer()->get('doctrine')->getManager();
+        $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
     }
 
     protected function restoreExceptionHandler(): void
@@ -44,19 +44,19 @@ class TaskControllerTest extends WebTestCase
 
     public function testApercuListeDesTaches()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('task_list'));
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
 
-        $tasks = $this->em->getRepository(Task::class)->findBy(['isDone' => false]);
+        $tasks = $this->entityManager->getRepository(Task::class)->findBy(['isDone' => false]);
 
         foreach ($tasks as $task) {
             $this->assertGreaterThan(0, $crawler->filter('.task-title:contains("' . $task->getTitle() . '")')->count());
             if ($task->getIdUser() === null) {
-                $anonymeUser = $this->em->getRepository(User::class)->findOneBy(['username' => 'anonyme']);
+                $anonymeUser = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'anonyme']);
                 $this->assertEquals($anonymeUser, $task->getIdUser());
             }
         }
@@ -64,17 +64,17 @@ class TaskControllerTest extends WebTestCase
 
     public function testEditionDeTache()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $task = new Task();
         $task->setTitle('Test Task');
         $task->setContent('This is a test task.');
         $task->setIdUser($user);
-        $this->em->persist($task);
-        $this->em->flush();
+        $this->entityManager->persist($task);
+        $this->entityManager->flush();
 
-        $task = $this->em->getRepository(Task::class)->findOneBy(['title' => 'Test Task']);
+        $task = $this->entityManager->getRepository(Task::class)->findOneBy(['title' => 'Test Task']);
         $taskID = $task->getId();
 
         $crawler = $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('task_edit', ['id' => $taskID]));
@@ -96,25 +96,25 @@ class TaskControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
 
-        $updatedTask = $this->em->getRepository(Task::class)->find($taskID);
+        $updatedTask = $this->entityManager->getRepository(Task::class)->find($taskID);
         $this->assertSame('Nouveau titre', $updatedTask->getTitle());
         $this->assertSame('Nouveau contenu', $updatedTask->getContent());
 
-        $this->em->remove($updatedTask);
-        $this->em->flush();
+        $this->entityManager->remove($updatedTask);
+        $this->entityManager->flush();
     }
 
     public function testModificationDeTacheNonTermineATermnine()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $task = new Task();
         $task->setTitle('Tache Test');
         $task->setContent('C\'est une tâche de test' );
         $task->setIdUser($user);
-        $this->em->persist($task);
-        $this->em->flush();
+        $this->entityManager->persist($task);
+        $this->entityManager->flush();
 
         $taskID = $task->getId();
 
@@ -125,16 +125,16 @@ class TaskControllerTest extends WebTestCase
 
         $this->client->followRedirect();
 
-        $updatedTask = $this->em->getRepository(Task::class)->find($taskID);
+        $updatedTask = $this->entityManager->getRepository(Task::class)->find($taskID);
         $this->assertTrue($updatedTask->isDone());
 
-        $this->em->remove($updatedTask);
-        $this->em->flush();
+        $this->entityManager->remove($updatedTask);
+        $this->entityManager->flush();
     }
 
     public function testCreationTache()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('task_create'));
@@ -152,7 +152,7 @@ class TaskControllerTest extends WebTestCase
         $this->assertTrue($this->client->getResponse()->isRedirect());
         $this->client->followRedirect();
 
-        $taskRepository = $this->em->getRepository(Task::class);
+        $taskRepository = $this->entityManager->getRepository(Task::class);
         $task = $taskRepository->findOneBy(['title' => 'Nouvelle tâche1']);
         $this->assertNotNull($task);
         $this->assertSame('Nouvelle tâche1', $task->getTitle());
@@ -162,7 +162,7 @@ class TaskControllerTest extends WebTestCase
 
     public function testSuppressionTache()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $task = new Task();
@@ -170,7 +170,7 @@ class TaskControllerTest extends WebTestCase
         $task->setContent('Contenu de la tâche à supprimer');
         $task->setIdUser($user);
 
-        $entityManager = $this->em;
+        $entityManager = $this->entityManager;
         $entityManager->persist($task);
         $entityManager->flush();
 
@@ -182,14 +182,14 @@ class TaskControllerTest extends WebTestCase
         $this->assertTrue($this->client->getResponse()->isRedirect());
         $this->client->followRedirect();
 
-        $taskRepository = $this->em->getRepository(Task::class);
+        $taskRepository = $this->entityManager->getRepository(Task::class);
         $deletedTask = $taskRepository->find($taskId);
         $this->assertNull($deletedTask);
     }
 
     public function testApercuListeDesTachesTermine()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $completedTask = new Task();
@@ -198,8 +198,8 @@ class TaskControllerTest extends WebTestCase
         $completedTask->setIsDone(true);
         $completedTask->setIdUser($user);
 
-        $this->em->persist($completedTask);
-        $this->em->flush();
+        $this->entityManager->persist($completedTask);
+        $this->entityManager->flush();
 
         $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('task_list_done'));
 

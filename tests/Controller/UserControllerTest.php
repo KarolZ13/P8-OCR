@@ -16,13 +16,13 @@ class UserControllerTest extends WebTestCase
 {
     private ?KernelBrowser $client = null;
     private ?UrlGeneratorInterface $urlGenerator = null;
-    private ?EntityManagerInterface $em = null;
+    private ?EntityManagerInterface $entityManager = null;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
         $this->urlGenerator = $this->client->getContainer()->get('router.default');
-        $this->em = $this->client->getContainer()->get('doctrine')->getManager();
+        $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
     }
 
     protected function restoreExceptionHandler(): void
@@ -45,7 +45,7 @@ class UserControllerTest extends WebTestCase
 
     public function testListesDesUtilisateursEnUtilisateur()
     {
-        $this->em->getRepository(Task::class)->findAll();
+        $this->entityManager->getRepository(Task::class)->findAll();
 
         $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_list'));
 
@@ -54,11 +54,11 @@ class UserControllerTest extends WebTestCase
 
     public function testListesDesUtilisateursEnAdministrateur()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
 
         $this->client->loginUser($user);
 
-        $this->em->getRepository(Task::class)->findAll();
+        $this->entityManager->getRepository(Task::class)->findAll();
 
         $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_list'));
 
@@ -67,7 +67,7 @@ class UserControllerTest extends WebTestCase
 
     public function testCreationUtilisateurEnAdministrateur()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_create'));
@@ -87,8 +87,8 @@ class UserControllerTest extends WebTestCase
         $this->assertTrue($this->client->getResponse()->isRedirect());
         $this->client->followRedirect();
 
-        $this->em->clear();
-        $userRepository = $this->em->getRepository(User::class);
+        $this->entityManager->clear();
+        $userRepository = $this->entityManager->getRepository(User::class);
         $newUser = $userRepository->findOneBy(['username' => 'Utilisateur']);
         $this->assertNotNull($newUser);
         $this->assertSame('Utilisateur', $newUser->getUsername());
@@ -102,7 +102,7 @@ class UserControllerTest extends WebTestCase
 
     public function testCreationUtilisateurEnUtilisateur()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'olivie25']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'olivie25']);
 
         $this->client->loginUser($user);
 
@@ -123,8 +123,8 @@ class UserControllerTest extends WebTestCase
         $this->assertTrue($this->client->getResponse()->isRedirect());
         $this->client->followRedirect();
 
-        $this->em->clear();
-        $userRepository = $this->em->getRepository(User::class);
+        $this->entityManager->clear();
+        $userRepository = $this->entityManager->getRepository(User::class);
         $newUser = $userRepository->findOneBy(['username' => 'Utilisateur']);
         $this->assertNotNull($newUser);
         $this->assertSame('Utilisateur', $newUser->getUsername());
@@ -137,7 +137,7 @@ class UserControllerTest extends WebTestCase
 
     public function testCreationUtilisateurSansRoleUser()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_create'));
@@ -155,7 +155,7 @@ class UserControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
         $this->client->followRedirect();
 
-        $userRepository = $this->em->getRepository(User::class);
+        $userRepository = $this->entityManager->getRepository(User::class);
         $newUser = $userRepository->findOneBy(['username' => 'UtilisateurSansRole']);
         $this->assertNotNull($newUser);
         $this->assertContains('ROLE_USER', $newUser->getRoles());
@@ -163,7 +163,7 @@ class UserControllerTest extends WebTestCase
 
     public function testEditionUtilisateurEnRoleUtilisateur()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'olivie25']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'olivie25']);
 
         $this->client->loginUser($user);
 
@@ -172,8 +172,8 @@ class UserControllerTest extends WebTestCase
         $newUser->setRoles(["ROLE_USER"]);
         $newUser->setPassword('TestUtilisateur');
         $newUser->setEmail('TestUtilisateur1@test.fr');
-        $this->em->persist($newUser);
-        $this->em->flush();
+        $this->entityManager->persist($newUser);
+        $this->entityManager->flush();
 
         $newUserId = $newUser->getId();
 
@@ -196,16 +196,16 @@ class UserControllerTest extends WebTestCase
 
         $this->client->followRedirect();
 
-        $updatedUser = $this->em->getRepository(User::class)->find($newUser);
+        $updatedUser = $this->entityManager->getRepository(User::class)->find($newUser);
 
-        $this->em->remove($updatedUser);
-        $this->em->flush();
+        $this->entityManager->remove($updatedUser);
+        $this->entityManager->flush();
     }
 
 
     public function testEditionUtilisateurEnRoleAdministrateur()
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'kazedadmin']);
 
         $this->client->loginUser($user);
 
@@ -214,8 +214,8 @@ class UserControllerTest extends WebTestCase
         $newUser->setRoles(["ROLE_USER"]);
         $newUser->setPassword('TestUtilisateur');
         $newUser->setEmail('TestUtilisateur@test.fr');
-        $this->em->persist($newUser);
-        $this->em->flush();
+        $this->entityManager->persist($newUser);
+        $this->entityManager->flush();
 
         $newUserId = $newUser->getId();
 
