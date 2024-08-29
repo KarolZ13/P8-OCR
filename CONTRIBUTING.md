@@ -17,7 +17,7 @@ Assurez-vous que les modifications fonctionnent correctement.
 Commit et Push :
 
 ```
-git commit -m "Description"
+git commit -m "Description of the commit"
 git push origin features\name_of_the_branch
 ```
 
